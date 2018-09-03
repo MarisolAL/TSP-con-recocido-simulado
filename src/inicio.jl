@@ -174,7 +174,6 @@ S_0 = ciudades_del_problema[num] #Esta es la solucion inicial (puede pertenecer 
 L = 50 #Esto pertenece a la configuracion
 iter_max = 5000 #Esto pertenece a la configuracion
 ruta = ruta_1
-costo_0 = costo(ruta)
 normalIzador = normalizador(ciudades_del_problema)
 
 "Funcion que permuta dos ciudades en una ruta"
@@ -192,18 +191,37 @@ function calcula_lote(T, S)
     c = 0
     i = 0
     r = 0.0
-    costo = costo_0
+    costo_i = costo(S)
     while c < L or i < iter_max
         #Obtenemos una permutacion
         id_s = sample(1:num, 2, replace=false) #obtenemos 2 id's
         id_1 = id_s[1]
         id_2 = id_s[2]
-        costo_aux = costo_permutacion(costo_0 ,ruta, id_1, id_2, normalIzador)
-        if costo_aux < costo + T
-            ruta = permuta(ruta,id_1,id_2)
+        costo_aux = costo_permutacion(costo_i ,S, id_1, id_2, normalIzador)
+        if costo_aux < costo_i + T
+            S = permuta(S,id_1,id_2)
             c = c+1
             r = r + costo_aux
+            costo_i = costo_aux #Para no recalcular
         end
     end
-    return [r/L,ruta]
+    return [r/L,S]
+end
+
+epsilon = 0.1 #Pertenece a archivo de configuracion
+phi = 0.5 #Pertenece a archivo de configuracion
+
+"Funcion que se encarga del recocido simulado"
+function aceptacion_por_umbrales(T,S)
+    p = 0
+    while T > epsilon
+        q = Inf
+        while p <= q
+            q = p
+            a = calcula_lote(T, S)
+            p = a[1]
+            s = a[2]
+        end
+        T = phi*T
+    end
 end
