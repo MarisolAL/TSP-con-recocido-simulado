@@ -173,8 +173,12 @@ num = rand(1:size(ciudades_del_problema)[1])
 S_0 = ciudades_del_problema[num] #Esta es la solucion inicial (puede pertenecer a la configuracion)
 L = 50 #Esto pertenece a la configuracion
 iter_max = 5000 #Esto pertenece a la configuracion
-ruta = ruta_1
-normalIzador = normalizador(ciudades_del_problema)
+normalIzador = normalizador(ciudades_del_problema)#####
+epsilon = 0.1 #Pertenece a archivo de configuracion
+phi = 0.5 #Pertenece a archivo de configuracion
+N = 500 #configuracion
+epsilon_p = 0.1 #configuracion
+epsilon_t = 0.1 #configuracion
 
 "Funcion que permuta dos ciudades en una ruta"
 function permuta(ruta, v_1, v_2)
@@ -194,7 +198,7 @@ function calcula_lote(T, S)
     costo_i = costo(S)
     while c < L or i < iter_max
         #Obtenemos una permutacion
-        id_s = sample(1:num, 2, replace=false) #obtenemos 2 id's
+        id_s = sample(1:size(ciudades_del_problema)[1], 2, replace=false) #obtenemos 2 id's
         id_1 = id_s[1]
         id_2 = id_s[2]
         costo_aux = costo_permutacion(costo_i ,S, id_1, id_2, normalIzador)
@@ -208,8 +212,7 @@ function calcula_lote(T, S)
     return [r/L,S]
 end
 
-epsilon = 0.1 #Pertenece a archivo de configuracion
-phi = 0.5 #Pertenece a archivo de configuracion
+
 
 "Funcion que se encarga del recocido simulado"
 function aceptacion_por_umbrales(T,S)
@@ -224,4 +227,66 @@ function aceptacion_por_umbrales(T,S)
         end
         T = phi*T
     end
+end
+
+#-------------------------
+
+
+"Funcion que calcula el porcentaje de soluciones aceptadas"
+function porcentaje_aceptados(s,T)
+    c = 0
+    costo_i = costo(s)
+    for i in 1:N
+        #Obtenemos una permutacion
+        id_s = sample(1:size(ciudades_del_problema)[1], 2, replace=false) #obtenemos 2 id's
+        id_1 = id_s[1]
+        id_2 = id_s[2]
+        costo_aux = costo_permutacion(costo_i ,s, id_1, id_2, normalIzador)
+        if costo_aux < costo_i + T
+            c = c+1
+            s = permuta(s,id_1,id_2)
+        end
+    end
+    return c/N
+end
+
+"Funcion que realiza la busqueda binaria"
+function busqueda_binaria(s, T_1, T_2, P)
+    T_m = (T_1 + T_2) / 2
+    if T_2 - T_1 < epsilon_t
+        return T_m
+    end
+    p = porcentaje_aceptados(s, T_m)
+    if abs(P-p) < epsilon_p
+        return T_m
+    end
+    if p > P
+        return busqueda_binaria(s, T_1, T_m)
+    else
+        return busqueda_binaria(s, T_m, T_2)
+    end
+end
+
+"Funcion que calcula la temperatura inicial"
+function  temperatura_inicial(s, T, P)
+    p = porcentaje_aceptados(s, T)
+    if abs(P - p) <= epsilon_p
+        return T
+    end
+    if p < P
+        while p < P
+            T = 2*T
+            p = porcentaje_aceptados(s, T)
+        end
+        T_1 = T/2
+        T_2 = T
+    else
+        while p > P
+            T = T/2
+            p = porcentaje_aceptados(s, T)
+        end
+        T_1 = T
+        T_2 = 2*T
+    end
+    return busqueda_binaria(s, T_1, T_2, P)
 end
