@@ -290,3 +290,8 @@ function  temperatura_inicial(s, T, P)
     end
     return busqueda_binaria(s, T_1, T_2, P)
 end
+
+"Funcion que nos dice si una solucion es factible"
+function es_factible(costo, normalizador)
+    return costo > normalizador
+end
