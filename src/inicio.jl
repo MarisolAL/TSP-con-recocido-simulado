@@ -164,3 +164,46 @@ function costo_permutacion(costo_actual, ruta, v_1, v_2,norm)
     suma = suma/norm
     return suma
 end
+
+#--------------------------------------------
+#Empezando recocido simulado
+
+T_0 = 50 #Esto pertenece a la configuracion
+num = rand(1:size(ciudades_del_problema)[1])
+S_0 = ciudades_del_problema[num] #Esta es la solucion inicial (puede pertenecer a la configuracion)
+L = 50 #Esto pertenece a la configuracion
+iter_max = 5000 #Esto pertenece a la configuracion
+ruta = ruta_1
+costo_0 = costo(ruta)
+normalIzador = normalizador(ciudades_del_problema)
+
+"Funcion que permuta dos ciudades en una ruta"
+function permuta(ruta, v_1, v_2)
+    ruta_nva = ruta
+    indice_v_1 = find_id(ruta_nva,v_1)
+    indice_v_2 = find_id(ruta_nva,v_2)
+    ruta_nva[indice_v_1] = v_2
+    ruta_nva[indice_v_2] = v_1
+    return ruta_nva
+end
+
+"Funcion que calcula el lote (soluciones aceptadas)"
+function calcula_lote(T, S)
+    c = 0
+    i = 0
+    r = 0.0
+    costo = costo_0
+    while c < L or i < iter_max
+        #Obtenemos una permutacion
+        id_s = sample(1:num, 2, replace=false) #obtenemos 2 id's
+        id_1 = id_s[1]
+        id_2 = id_s[2]
+        costo_aux = costo_permutacion(costo_0 ,ruta, id_1, id_2, normalIzador)
+        if costo_aux < costo + T
+            ruta = permuta(ruta,id_1,id_2)
+            c = c+1
+            r = r + costo_aux
+        end
+    end
+    return [r/L,ruta]
+end
