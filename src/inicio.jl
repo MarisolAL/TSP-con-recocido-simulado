@@ -137,30 +137,43 @@ function costo_permutacion(costo_actual, ruta, v_1, v_2,norm)
     length = size(ruta)[1]
     indice_v_1 = find_id(ruta,v_1)
     indice_v_2 = find_id(ruta,v_2)
-    if indice_v_1 < length && indice_v_2 < length && indice_v_1 > 0 && indice_v_2 > 0  #Caso facil
-        suma = suma - grafica[v_1,ruta[indice_v_1+1]] - grafica[v_1,ruta[indice_v_1-1]]
-        suma = suma - grafica[v_2,ruta[indice_v_2+1]] - grafica[v_2,ruta[indice_v_2-1]]
-        suma = suma + grafica[v_1,ruta[indice_v_2+1]] + grafica[v_1,ruta[indice_v_2-1]]
-        suma = suma + grafica[v_2,ruta[indice_v_1+1]] + grafica[v_2,ruta[indice_v_1-1]]
-    end
     if indice_v_1 == length #v_1 esta en el extremo
         suma = suma - grafica[v_1,ruta[indice_v_1-1]] + grafica[v_2,ruta[indice_v_1-1]] #permutamos el extremo
-        if indice_v_2 == 0
+        if indice_v_2 == 1
             suma = suma - grafica[v_2,ruta[indice_v_2+1]] + grafica[v_1,ruta[indice_v_2+1]] #permutamos el extremo
         else
             suma = suma - grafica[v_2,ruta[indice_v_2+1]] - grafica[v_2,ruta[indice_v_2-1]]
             suma = suma + grafica[v_1,ruta[indice_v_2+1]] + grafica[v_1,ruta[indice_v_2-1]]
         end
+        return suma/norm
     end
     if indice_v_2 == length #v_2 esta en el extremo
         suma = suma - grafica[v_2,ruta[indice_v_2-1]] + grafica[v_1,ruta[indice_v_2-1]] #permutamos el extremo
-        if indice_v_1 == 0
+        if indice_v_1 == 1
             suma = suma - grafica[v_1,ruta[indice_v_1+1]] + grafica[v_2,ruta[indice_v_1+1]] #permutamos el extremo
         else
             suma = suma - grafica[v_1,ruta[indice_v_1+1]] - grafica[v_1,ruta[indice_v_1-1]]
             suma = suma + grafica[v_2,ruta[indice_v_1+1]] + grafica[v_2,ruta[indice_v_1-1]]
         end
+        return suma/norm
     end
+    if indice_v_1 == 1 #Un indice esta al inicio y el otro no esta al final
+        suma = suma - grafica[v_1,ruta[indice_v_1+1]] +  grafica[v_2,ruta[indice_v_1+1]]
+        suma = suma - grafica[v_2,ruta[indice_v_2+1]] - grafica[v_2,ruta[indice_v_2-1]]
+        suma = suma + grafica[v_1,ruta[indice_v_2+1]] + grafica[v_1,ruta[indice_v_2-1]]
+        return suma/norm
+    end
+    if indice_v_2 == 1 #Un indice esta al inicio y el otro no esta al final
+        suma = suma - grafica[v_2,ruta[indice_v_2+1]] +  grafica[v_1,ruta[indice_v_2+1]]
+        suma = suma - grafica[v_1,ruta[indice_v_1+1]] - grafica[v_1,ruta[indice_v_1-1]]
+        suma = suma + grafica[v_2,ruta[indice_v_1+1]] + grafica[v_2,ruta[indice_v_1-1]]
+        return suma/norm
+    end
+
+    suma = suma - grafica[v_1,ruta[indice_v_1+1]] - grafica[v_1,ruta[indice_v_1-1]]
+    suma = suma - grafica[v_2,ruta[indice_v_2+1]] - grafica[v_2,ruta[indice_v_2-1]]
+    suma = suma + grafica[v_1,ruta[indice_v_2+1]] + grafica[v_1,ruta[indice_v_2-1]]
+    suma = suma + grafica[v_2,ruta[indice_v_1+1]] + grafica[v_2,ruta[indice_v_1-1]]
     suma = suma/norm
     return suma
 end
@@ -182,21 +195,28 @@ epsilon_t = 0.1 #configuracion
 
 "Funcion que permuta dos ciudades en una ruta"
 function permuta(ruta, v_1, v_2)
-    ruta_nva = ruta
-    indice_v_1 = find_id(ruta_nva,v_1)
-    indice_v_2 = find_id(ruta_nva,v_2)
+    longitud = size(ruta)[1]
+    ruta_nva = ones(longitud)
+    indice_v_1 = find_id(ruta,v_1)
+    indice_v_2 = find_id(ruta,v_2)
     ruta_nva[indice_v_1] = v_2
     ruta_nva[indice_v_2] = v_1
     return ruta_nva
 end
 
+println(ruta_1)
+println(permuta(ruta_1,3,12))
+println(permuta(ruta_1,1,12))
+println(permuta(ruta_1,12,1))
+println(permuta(ruta_1,6,9))
+println(ruta_1)
 "Funcion que calcula el lote (soluciones aceptadas)"
 function calcula_lote(T, S)
     c = 0
     i = 0
     r = 0.0
     costo_i = costo(S)
-    while c < L or i < iter_max
+    while c < L || i < iter_max
         #Obtenemos una permutacion
         id_s = sample(1:size(ciudades_del_problema)[1], 2, replace=false) #obtenemos 2 id's
         id_1 = id_s[1]
