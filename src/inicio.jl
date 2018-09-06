@@ -236,7 +236,6 @@ function calcula_lote(T, S,normalIzador)
         costo_aux = costo_permutacion(costo_i ,S, id_1, id_2, normalIzador)
         if costo_aux < costo_i + T
             S = permuta(S,id_1,id_2)
-            #println(S)
             c = c+1
             r = r + costo_aux
             costo_i = costo_aux #Para no recalcular
