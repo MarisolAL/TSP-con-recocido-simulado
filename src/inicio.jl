@@ -150,7 +150,6 @@ function costo_permutacion(costo_actual, ruta, v_1, v_2,norm)
     length = size(ruta)[1]
     indice_v_1 = find_id(ruta,v_1)
     indice_v_2 = find_id(ruta,v_2)
-    println([indice_v_1,indice_v_2])
     if indice_v_1 == length #v_1 esta en el extremo
         suma = suma - grafica[v_1,ruta[indice_v_1-1]] + grafica[v_2,ruta[indice_v_1-1]] #permutamos el extremo
         if indice_v_2 == 1
@@ -183,9 +182,6 @@ function costo_permutacion(costo_actual, ruta, v_1, v_2,norm)
         suma = suma + grafica[v_2,ruta[indice_v_1+1]] + grafica[v_2,ruta[indice_v_1-1]]
         return suma/norm
     end
-    println("aqui")
-    println([indice_v_1+1,indice_v_1-1,indice_v_2+1,indice_v_2-1,v_1,v_2])
-    println("\n")
     suma = suma - grafica[v_1,ruta[indice_v_1+1]] - grafica[v_1,ruta[indice_v_1-1]]
     suma = suma - grafica[v_2,ruta[indice_v_2+1]] - grafica[v_2,ruta[indice_v_2-1]]
     suma = suma + grafica[v_1,ruta[indice_v_2+1]] + grafica[v_1,ruta[indice_v_2-1]]
@@ -215,6 +211,7 @@ function permuta(ruta, v_1, v_2)
     indice_v_2 = find_id(ruta,v_2)
     ruta[indice_v_1] = v_2
     ruta[indice_v_2] = v_1
+    return ruta
 end
 
 "Funcion que obtiene una permutacion aleatoria usando la grafica
@@ -239,10 +236,12 @@ function calcula_lote(T, S,normalIzador)
         costo_aux = costo_permutacion(costo_i ,S, id_1, id_2, normalIzador)
         if costo_aux < costo_i + T
             S = permuta(S,id_1,id_2)
+            #println(S)
             c = c+1
             r = r + costo_aux
             costo_i = costo_aux #Para no recalcular
         end
+        i += 1
     end
     return [r/L,S]
 end
@@ -258,28 +257,31 @@ function aceptacion_por_umbrales(T,S,normalIzador)
             q = p
             a = calcula_lote(T, S,normalIzador)
             p = a[1]
-            s = a[2]
+            S = a[2]
         end
         T = phi*T
     end
+    return S
 end
 
 #-------------------------
 
 
 "Funcion que calcula el porcentaje de soluciones aceptadas"
-function porcentaje_aceptados(s,T,normalIzador)
+function porcentaje_aceptados(S,T,normalIzador)
     c = 0
-    costo_i = costo(s,normalIzador)
+    costo_i = costo(S,normalIzador)
     for i in 1:N
         #Obtenemos una permutacion
         id_s = sample(1:size(ciudades_del_problema)[1], 2, replace=false) #obtenemos 2 id's
         id_1 = id_s[1]
         id_2 = id_s[2]
-        costo_aux = costo_permutacion(costo_i ,s, id_1, id_2, normalIzador)
+        costo_aux = costo_permutacion(costo_i ,S, id_1, id_2, normalIzador)
         if costo_aux < costo_i + T
             c = c+1
-            s = permuta(s,id_1,id_2)
+            S = permuta(S,id_1,id_2)
+            #println("NUeva S")
+            #println(S)
         end
     end
     return c/N
@@ -296,9 +298,9 @@ function busqueda_binaria(s, T_1, T_2, P,normalIzador)
         return T_m
     end
     if p > P
-        return busqueda_binaria(s, T_1, T_m,normalIzador)
+        return busqueda_binaria(s, T_1, T_m,P,normalIzador)
     else
-        return busqueda_binaria(s, T_m, T_2,normalIzador)
+        return busqueda_binaria(s, T_m, T_2,P,normalIzador)
     end
 end
 
@@ -327,8 +329,8 @@ function  temperatura_inicial(s, T, P,normalIzador)
 end
 
 "Funcion que nos dice si una solucion es factible"
-function es_factible(costo, normalizador)
-    return costo > normalizador
+function es_factible(costo, normalIzador)
+    return costo < normalIzador
 end
 
 #-------------------------------
@@ -339,9 +341,19 @@ function haz_todo()
     length = size(ciudades_del_problema)[1]
     s_0 = obten_permutacion_aleatoria(length)#permutacion aleatoria
     T = temperatura_inicial(s_0,T_0,P,normalIzador)
-    aceptacion_por_umbrales(T,s_0,normalIzador)
-    println(s_0)
-
+    solucion = aceptacion_por_umbrales(T,s_0,normalIzador)
+    string_sol = string("Solucion final = ",solucion)
+    costo_f = costo(solucion, normalIzador)
+    string_cos = string("costo final = ",costo_f)
+    string_fac = string("Es factible? ",es_factible(costo_f,normalIzador))
+    println(string_sol)
+    println(string_cos)
+    println(string_fac)
+    println("\n")
 end
 
-haz_todo()
+#Haciendo archivo de prueba de soluciones
+veces = 100
+for i in 1:veces
+    haz_todo()
+end
