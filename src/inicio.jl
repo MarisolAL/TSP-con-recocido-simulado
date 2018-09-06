@@ -10,6 +10,9 @@ no_ciudades = 40 #Este es parte de la configuracion
 total_ciudades = SQLite.query(base_datos, "SELECT COUNT(*) FROM cities")
 no_total_ciudades = first(convert(Array,total_ciudades))
 
+
+
+
 "Funcion que regresa un arreglo con los id's de las ciudades
 propuestas para el tsp
 #Arguments
@@ -20,7 +23,7 @@ function get_ciudades(no_ciudades, no_total_ciudades)
     return id_s
 end
 
-ciudades_del_problema = get_ciudades(no_ciudades, no_total_ciudades)
+
 
 #Funcion que regresa una tabla con las ciudades que utilizaremos
 #esta es una subtabla de la tabla original de connections
@@ -76,8 +79,6 @@ function distancia_natural(citi_1, citi_2)
     return distancia
 end
 
-#println(distancia_natural(2,9))
-
 "Funcion que crea la matriz de adyacencias con los pesos entre las ciudades, en caso de no haber arista la funcion
 calcula la distancia natural y multiplica por el normalizador, a la arista con el mismo vertice se le asigna un 0"
 function crea_matriz_adyacencias(ciudades_del_problema)
@@ -107,9 +108,21 @@ function crea_matriz_adyacencias(ciudades_del_problema)
         end
         return matriz
 end
-ciudades_del_problema = [1,2,3,4,5,6,7,8,9,10,11,12]
+
+
+########################################
+ciudades_del_problema = [1,2,3,28,74,163,164,165,166,167,169,326,327,328,329,330,489,490,491,492,493,494,495,653,654,655,658,666,814,815,816,817,818,819,978,979,980,981,1037,1073]
 grafica = crea_matriz_adyacencias(ciudades_del_problema)
-ruta_1 = [1,3,6,9,2,12]
+T_0 = 50 #Esto pertenece a la configuracion
+L = 50 #Esto pertenece a la configuracion
+iter_max = 5000 #Esto pertenece a la configuracion
+normalIzador = normalizador(ciudades_del_problema)#####
+epsilon = 0.1 #Pertenece a archivo de configuracion
+phi = 0.5 #Pertenece a archivo de configuracion
+N = 500 #configuracion
+epsilon_p = 0.1 #configuracion
+P = 0.9
+########################################
 
 "Funcion que calcula el costo de una ruta"
 function costo(ruta,norm)
@@ -137,6 +150,7 @@ function costo_permutacion(costo_actual, ruta, v_1, v_2,norm)
     length = size(ruta)[1]
     indice_v_1 = find_id(ruta,v_1)
     indice_v_2 = find_id(ruta,v_2)
+    println([indice_v_1,indice_v_2])
     if indice_v_1 == length #v_1 esta en el extremo
         suma = suma - grafica[v_1,ruta[indice_v_1-1]] + grafica[v_2,ruta[indice_v_1-1]] #permutamos el extremo
         if indice_v_2 == 1
@@ -169,7 +183,9 @@ function costo_permutacion(costo_actual, ruta, v_1, v_2,norm)
         suma = suma + grafica[v_2,ruta[indice_v_1+1]] + grafica[v_2,ruta[indice_v_1-1]]
         return suma/norm
     end
-
+    println("aqui")
+    println([indice_v_1+1,indice_v_1-1,indice_v_2+1,indice_v_2-1,v_1,v_2])
+    println("\n")
     suma = suma - grafica[v_1,ruta[indice_v_1+1]] - grafica[v_1,ruta[indice_v_1-1]]
     suma = suma - grafica[v_2,ruta[indice_v_2+1]] - grafica[v_2,ruta[indice_v_2-1]]
     suma = suma + grafica[v_1,ruta[indice_v_2+1]] + grafica[v_1,ruta[indice_v_2-1]]
@@ -182,40 +198,39 @@ end
 #Empezando recocido simulado
 
 T_0 = 50 #Esto pertenece a la configuracion
-num = rand(1:size(ciudades_del_problema)[1])
-S_0 = ciudades_del_problema[num] #Esta es la solucion inicial (puede pertenecer a la configuracion)
+#num = rand(1:size(ciudades_del_problema)[1])
+#S_0 = ciudades_del_problema[num] #Esta es la solucion inicial (puede pertenecer a la configuracion)
 L = 50 #Esto pertenece a la configuracion
 iter_max = 5000 #Esto pertenece a la configuracion
-normalIzador = normalizador(ciudades_del_problema)#####
+#normalIzador = normalizador(ciudades_del_problema)#####
 epsilon = 0.1 #Pertenece a archivo de configuracion
 phi = 0.5 #Pertenece a archivo de configuracion
 N = 500 #configuracion
 epsilon_p = 0.1 #configuracion
-epsilon_t = 0.1 #configuracion
 
-"Funcion que permuta dos ciudades en una ruta"
+
+"Funcion que permuta dos ciudades en una ruta, modifica la ruta original"
 function permuta(ruta, v_1, v_2)
-    longitud = size(ruta)[1]
-    ruta_nva = ones(longitud)
     indice_v_1 = find_id(ruta,v_1)
     indice_v_2 = find_id(ruta,v_2)
-    ruta_nva[indice_v_1] = v_2
-    ruta_nva[indice_v_2] = v_1
-    return ruta_nva
+    ruta[indice_v_1] = v_2
+    ruta[indice_v_2] = v_1
 end
 
-println(ruta_1)
-println(permuta(ruta_1,3,12))
-println(permuta(ruta_1,1,12))
-println(permuta(ruta_1,12,1))
-println(permuta(ruta_1,6,9))
-println(ruta_1)
+"Funcion que obtiene una permutacion aleatoria usando la grafica
+para esto usamos los id's en graica para luego despues hacer la correspondencia con
+los verdaderos id's localizados en la base de datos "
+function obten_permutacion_aleatoria(longitud)
+    ruta = sample(1:longitud, longitud, replace=false)#Obtenemos dos indices aleatorios
+    return ruta
+end
+
 "Funcion que calcula el lote (soluciones aceptadas)"
-function calcula_lote(T, S)
+function calcula_lote(T, S,normalIzador)
     c = 0
     i = 0
     r = 0.0
-    costo_i = costo(S)
+    costo_i = costo(S,normalIzador)
     while c < L || i < iter_max
         #Obtenemos una permutacion
         id_s = sample(1:size(ciudades_del_problema)[1], 2, replace=false) #obtenemos 2 id's
@@ -235,13 +250,13 @@ end
 
 
 "Funcion que se encarga del recocido simulado"
-function aceptacion_por_umbrales(T,S)
+function aceptacion_por_umbrales(T,S,normalIzador)
     p = 0
     while T > epsilon
         q = Inf
         while p <= q
             q = p
-            a = calcula_lote(T, S)
+            a = calcula_lote(T, S,normalIzador)
             p = a[1]
             s = a[2]
         end
@@ -253,9 +268,9 @@ end
 
 
 "Funcion que calcula el porcentaje de soluciones aceptadas"
-function porcentaje_aceptados(s,T)
+function porcentaje_aceptados(s,T,normalIzador)
     c = 0
-    costo_i = costo(s)
+    costo_i = costo(s,normalIzador)
     for i in 1:N
         #Obtenemos una permutacion
         id_s = sample(1:size(ciudades_del_problema)[1], 2, replace=false) #obtenemos 2 id's
@@ -271,47 +286,62 @@ function porcentaje_aceptados(s,T)
 end
 
 "Funcion que realiza la busqueda binaria"
-function busqueda_binaria(s, T_1, T_2, P)
+function busqueda_binaria(s, T_1, T_2, P,normalIzador)
     T_m = (T_1 + T_2) / 2
-    if T_2 - T_1 < epsilon_t
+    if T_2 - T_1 < epsilon
         return T_m
     end
-    p = porcentaje_aceptados(s, T_m)
+    p = porcentaje_aceptados(s, T_m,normalIzador)
     if abs(P-p) < epsilon_p
         return T_m
     end
     if p > P
-        return busqueda_binaria(s, T_1, T_m)
+        return busqueda_binaria(s, T_1, T_m,normalIzador)
     else
-        return busqueda_binaria(s, T_m, T_2)
+        return busqueda_binaria(s, T_m, T_2,normalIzador)
     end
 end
 
 "Funcion que calcula la temperatura inicial"
-function  temperatura_inicial(s, T, P)
-    p = porcentaje_aceptados(s, T)
+function  temperatura_inicial(s, T, P,normalIzador)
+    p = porcentaje_aceptados(s, T,normalIzador)
     if abs(P - p) <= epsilon_p
         return T
     end
     if p < P
         while p < P
             T = 2*T
-            p = porcentaje_aceptados(s, T)
+            p = porcentaje_aceptados(s, T,normalIzador)
         end
         T_1 = T/2
         T_2 = T
     else
         while p > P
             T = T/2
-            p = porcentaje_aceptados(s, T)
+            p = porcentaje_aceptados(s, T,normalIzador)
         end
         T_1 = T
         T_2 = 2*T
     end
-    return busqueda_binaria(s, T_1, T_2, P)
+    return busqueda_binaria(s, T_1, T_2, P,normalIzador)
 end
 
 "Funcion que nos dice si una solucion es factible"
 function es_factible(costo, normalizador)
     return costo > normalizador
 end
+
+#-------------------------------
+
+"Funcion que corre todo el algoritmo"
+function haz_todo()
+    #Tomando instancia
+    length = size(ciudades_del_problema)[1]
+    s_0 = obten_permutacion_aleatoria(length)#permutacion aleatoria
+    T = temperatura_inicial(s_0,T_0,P,normalIzador)
+    aceptacion_por_umbrales(T,s_0,normalIzador)
+    println(s_0)
+
+end
+
+haz_todo()
