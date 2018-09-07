@@ -318,7 +318,7 @@ end
 
 "Funcion que nos dice si una solucion es factible"
 function es_factible(costo, normalIzador)
-    return costo < normalIzador
+    return costo < 1
 end
 
 function pasa_a_ids_reales(ciudades_del_problema, solucion)
