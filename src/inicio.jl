@@ -39,11 +39,13 @@ end
 function normalizador(ciudades_del_problema)
     id_s = strip(string(ciudades_del_problema), ['[',']','(',')','{','}'])
     n = size(ciudades_del_problema,1)
-    consulta = string(" SELECT sum(distance) FROM connections where id_city_1 in (",id_s,") and id_city_2 in (",id_s,") order by distance desc limit ",n)
+    consulta = string("select sum(distance) from (select * from connections where id_city_1 in (",id_s,") and id_city_2 in (",id_s,") order by distance desc limit ", n-1, ")")
     suma_c = SQLite.query(base_datos,consulta)
     suma = first(convert(Array,suma_c))
     return suma
 end
+
+#println(normalizador([1,2,3,28,74,163,164,165,166,167,169,326,327,328,329,330,489,490,491,492,493,494,495,653,654,655,658,666,814,815,816,817,818,819,978,979,980,981,1037,1073]))
 
 "Funcion que devuelve el indice en la lista"
 function find_id(lista, id)
@@ -138,6 +140,8 @@ function costo(ruta,norm)
     return suma
 end
 
+
+
 "Funcion que calcula el nuevo costo dada una permutacion
 #Arguments
 - costo_actual:: Double: Representa el costo de la ruta sin la costo_permutacion
@@ -190,19 +194,6 @@ function costo_permutacion(costo_actual, ruta, v_1, v_2,norm)
     return suma
 end
 
-#--------------------------------------------
-#Empezando recocido simulado
-
-T_0 = 50 #Esto pertenece a la configuracion
-#num = rand(1:size(ciudades_del_problema)[1])
-#S_0 = ciudades_del_problema[num] #Esta es la solucion inicial (puede pertenecer a la configuracion)
-L = 50 #Esto pertenece a la configuracion
-iter_max = 5000 #Esto pertenece a la configuracion
-#normalIzador = normalizador(ciudades_del_problema)#####
-epsilon = 0.1 #Pertenece a archivo de configuracion
-phi = 0.5 #Pertenece a archivo de configuracion
-N = 500 #configuracion
-epsilon_p = 0.1 #configuracion
 
 
 "Funcion que permuta dos ciudades en una ruta, modifica la ruta original"
@@ -279,8 +270,6 @@ function porcentaje_aceptados(S,T,normalIzador)
         if costo_aux < costo_i + T
             c = c+1
             S = permuta(S,id_1,id_2)
-            #println("NUeva S")
-            #println(S)
         end
     end
     return c/N
@@ -332,6 +321,16 @@ function es_factible(costo, normalIzador)
     return costo < normalIzador
 end
 
+function pasa_a_ids_reales(ciudades_del_problema, solucion)
+    length = size(solucion)[1]
+    respuesta = ones(length)
+    for i in 1:length
+        indice = solucion[i]
+        ciudad = ciudades_del_problema[indice]
+        respuesta[i] = ciudad
+    end
+    return respuesta
+end
 #-------------------------------
 
 "Funcion que corre todo el algoritmo"
@@ -341,7 +340,8 @@ function haz_todo()
     s_0 = obten_permutacion_aleatoria(length)#permutacion aleatoria
     T = temperatura_inicial(s_0,T_0,P,normalIzador)
     solucion = aceptacion_por_umbrales(T,s_0,normalIzador)
-    string_sol = string("Solucion final = ",solucion)
+    solucion2 = pasa_a_ids_reales(ciudades_del_problema,solucion)
+    string_sol = string("Solucion final = ",solucion2)
     costo_f = costo(solucion, normalIzador)
     string_cos = string("costo final = ",costo_f)
     string_fac = string("Es factible? ",es_factible(costo_f,normalIzador))
