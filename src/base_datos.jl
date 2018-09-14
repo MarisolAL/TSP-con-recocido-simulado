@@ -51,6 +51,17 @@ function distancia_natural(citi_1, citi_2)
     return distancia
 end
 
+"Funcion que devuelve el indice en la lista"
+function find_id(lista, id)
+    n = size(lista,1)
+    for i in 1:n
+        if lista[i] == id
+            return i
+        end
+    end
+    return -1
+end
+
 "Funcion que crea la matriz de adyacencias con los pesos entre las ciudades, en caso de no haber arista la funcion
 calcula la distancia natural y multiplica por el normalizador, a la arista con el mismo vertice se le asigna un 0"
 function crea_matriz_adyacencias(ciudades_del_problema)
