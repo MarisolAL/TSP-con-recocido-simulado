@@ -23,8 +23,6 @@ function get_ciudades(no_ciudades, no_total_ciudades)
     return id_s
 end
 
-
-
 #Funcion que regresa una tabla con las ciudades que utilizaremos
 #esta es una subtabla de la tabla original de connections
 #Recibe la lista con los id's de las ciudades
@@ -44,8 +42,6 @@ function normalizador(ciudades_del_problema)
     suma = first(convert(Array,suma_c))
     return suma
 end
-
-#println(normalizador([1,2,3,28,74,163,164,165,166,167,169,326,327,328,329,330,489,490,491,492,493,494,495,653,654,655,658,666,814,815,816,817,818,819,978,979,980,981,1037,1073]))
 
 "Funcion que devuelve el indice en la lista"
 function find_id(lista, id)
