@@ -116,7 +116,7 @@ end
 ciudades_del_problema = [1,2,3,28,74,163,164,165,166,167,169,326,327,328,329,330,489,490,491,492,493,494,495,653,654,655,658,666,814,815,816,817,818,819,978,979,980,981,1037,1073]
 grafica = crea_matriz_adyacencias(ciudades_del_problema)
 T_0 = 50 #Esto pertenece a la configuracion
-L = 50 #Esto pertenece a la configuracion
+L = 500 #Esto pertenece a la configuracion
 iter_max = 5000 #Esto pertenece a la configuracion
 normalIzador = normalizador(ciudades_del_problema)#####
 epsilon = 0.1 #Pertenece a archivo de configuracion
@@ -224,12 +224,14 @@ function calcula_lote(T, S,normalIzador)
         id_s = sample(1:size(ciudades_del_problema)[1], 2, replace=false) #obtenemos 2 id's
         id_1 = id_s[1]
         id_2 = id_s[2]
-        costo_aux = costo_permutacion(costo_i ,S, id_1, id_2, normalIzador)
+        s_1 = permuta(S,id_1,id_2)
+        costo_aux = costo(s_1, normalIzador)
         if costo_aux < costo_i + T
             S = permuta(S,id_1,id_2)
             c = c+1
             r = r + costo_aux
             costo_i = costo_aux #Para no recalcular
+            println(string(">", costo_i))
         end
         i += 1
     end
@@ -266,7 +268,8 @@ function porcentaje_aceptados(S,T,normalIzador)
         id_s = sample(1:size(ciudades_del_problema)[1], 2, replace=false) #obtenemos 2 id's
         id_1 = id_s[1]
         id_2 = id_s[2]
-        costo_aux = costo_permutacion(costo_i ,S, id_1, id_2, normalIzador)
+        s_1 = permuta(S,id_1,id_2)
+        costo_aux = costo(s_1, normalIzador)
         if costo_aux < costo_i + T
             c = c+1
             S = permuta(S,id_1,id_2)
@@ -341,18 +344,17 @@ function haz_todo()
     T = temperatura_inicial(s_0,T_0,P,normalIzador)
     solucion = aceptacion_por_umbrales(T,s_0,normalIzador)
     solucion2 = pasa_a_ids_reales(ciudades_del_problema,solucion)
-    string_sol = string("Solucion final = ",solucion2)
     costo_f = costo(solucion, normalIzador)
-    string_cos = string("costo final = ",costo_f)
-    string_fac = string("Es factible? ",es_factible(costo_f,normalIzador))
-    println(string_sol)
-    println(string_cos)
-    println(string_fac)
-    println("\n")
+    return[solucion2,costo_f,es_factible(costo_f,normalIzador)]
 end
 
-#Haciendo archivo de prueba de soluciones
+#Haciendo varios archivo de prueba de soluciones
+epsilon = 0.6599999999999998
 veces = 100
-for i in 1:veces
-    haz_todo()
-end
+resp = haz_todo()
+minimo = resp[2]
+s = resp[1]
+println(string("Solucion final = ",resp[1]))
+println(string("costo final = ",resp[2]))
+println(string("Es factible? ",resp[3],"\n"))
+write("Salida11_9_2.txt",string(string("Solucion final = ",resp[1],"\n"),string("costo final = ",resp[2],"\n"),string("Es factible? ",resp[3],"\n")))
