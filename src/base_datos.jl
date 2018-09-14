@@ -7,10 +7,10 @@ using StatsBase
 base_datos = SQLite.DB("ciudades.db")
 ciudadesdb = SQLite.query(base_datos, "SELECT * FROM cities")
 
-
-#Funcion que regresa una tabla con las ciudades que utilizaremos
-#esta es una subtabla de la tabla original de connections
-#Recibe la lista con los id's de las ciudades
+"Funcion que regresa una tabla con las ciudades que utilizaremos esta es
+una subtabla de la tabla original de connections
+#Arguments
+- lista_ciudades:: Array{Int64,1}: Lista con los id's de las ciudades"
 function get_tabla_min(lista_ciudades)
     id_s = strip(string(lista_ciudades), ['[',']','(',')','{','}'])
     consulta  = string("SELECT * FROM connections where id_city_1 in (", id_s , ") and id_city_2 in (" , id_s,")")
@@ -18,7 +18,9 @@ function get_tabla_min(lista_ciudades)
     return conexiones_db
 end
 
-"Funcion que obtiene el normalizador dados los id's de las ciudades."
+"Funcion que obtiene el normalizador dados los id's de las ciudades.
+#Arguments
+- ciudades_del_problema:: Array{Int64,1}: Lista con los id's de las ciudades que participaran en el TSP"
 function normalizador(ciudades_del_problema)
     id_s = strip(string(ciudades_del_problema), ['[',']','(',')','{','}'])
     n = size(ciudades_del_problema,1)
@@ -28,7 +30,10 @@ function normalizador(ciudades_del_problema)
     return suma
 end
 
-"Funcion que calcula la distancia natural entre dos ciudades usando sus id's"
+"Funcion que calcula la distancia natural entre dos ciudades usando sus id's en la base de datos
+#Arguments
+- citi_1:: Int64: Id de la primera ciudad
+- citi_2:: Int64: Id de la segunda ciudad"
 function distancia_natural(citi_1, citi_2)
     #Obtenemos las latitudes y longitudes
     consulta_lat = string("SELECT latitude  FROM cities  where id == ",citi_1,";")
@@ -51,11 +56,14 @@ function distancia_natural(citi_1, citi_2)
     return distancia
 end
 
-"Funcion que devuelve el indice en la lista"
-function find_id(lista, id)
+"Funcion que devuelve el indice en la lista del objeto obj
+#Arguments
+- lista:: Array{Any, 1}: Lista sobre la cual buscaremos el objeto
+- obj:: Any: Objeto que buscamos en la lista"
+function find_id(lista, obj)
     n = size(lista,1)
     for i in 1:n
-        if lista[i] == id
+        if lista[i] == obj
             return i
         end
     end
@@ -63,7 +71,9 @@ function find_id(lista, id)
 end
 
 "Funcion que crea la matriz de adyacencias con los pesos entre las ciudades, en caso de no haber arista la funcion
-calcula la distancia natural y multiplica por el normalizador, a la arista con el mismo vertice se le asigna un 0"
+calcula la distancia natural y multiplica por el normalizador, a la arista con el mismo vertice se le asigna un 0
+#Arguments
+- ciudades_del_problema:: Array{Int64,1}: Lista con los id's de las ciudades que participan en el TSP"
 function crea_matriz_adyacencias(ciudades_del_problema)
         norm = normalizador(ciudades_del_problema)
         entorno = get_tabla_min(ciudades_del_problema)
