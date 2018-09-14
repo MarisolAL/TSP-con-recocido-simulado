@@ -1,5 +1,5 @@
+module recocido_simulado
 include("base_datos.jl")
-using Base_Datos
 using StatsBase
 
 #Parte de la CONFIGURACION
@@ -272,3 +272,5 @@ s = resp[1]
 println(minimo)
 println(s)
 println(resp[3])
+
+end

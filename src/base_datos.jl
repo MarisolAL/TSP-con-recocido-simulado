@@ -5,7 +5,6 @@ using SQLite
 using StatsBase
 
 base_datos = SQLite.DB("ciudades.db")
-ciudadesdb = SQLite.query(base_datos, "SELECT * FROM cities")
 
 "Funcion que regresa una tabla con las ciudades que utilizaremos esta es
 una subtabla de la tabla original de connections
