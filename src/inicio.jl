@@ -354,3 +354,13 @@ println(string("Solucion final = ",resp[1]))
 println(string("costo final = ",resp[2]))
 println(string("Es factible? ",resp[3],"\n"))
 write("Salida11_9_2.txt",string(string("Solucion final = ",resp[1],"\n"),string("costo final = ",resp[2],"\n"),string("Es factible? ",resp[3],"\n")))
+
+"
+min_c = Inf
+for i in 1:100
+    resp = haz_todo(N)
+    minimo = resp[2]
+    s = resp[1]
+    if
+    println(string("costo= ",minimo," solucion = ", s, " es factible ",resp[3], "\n"))
+end"

@@ -50,7 +50,7 @@ function distancia_natural(citi_1, citi_2)
     long_2 = (long_2*pi)/180
     #Obtenemos la distancia distancia natural
     A = sin((lat_2-lat_1)/2)^2 + (cos(lat_1)*cos(lat_2)*(sin((long_2-long_1)/2)^2))
-    C = 2*atan2(A^0.5,(1-A)^0.5)#REVISAAAR
+    C = 2*atan(A^0.5,(1-A)^0.5)#REVISAAAR
     distancia = 6373000*C
     return distancia
 end

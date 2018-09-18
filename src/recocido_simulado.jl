@@ -7,7 +7,7 @@ ciudades_del_problema = [1,2,3,28,74,163,164,165,166,167,169,326,327,328,329,330
 T_0 = 100
 L = 500
 iter_max = 5000
-epsilon = 0.1
+epsilon = 0.6
 phi = 0.5
 veces = 5000
 epsilon_p = 0.1
@@ -263,14 +263,17 @@ function haz_todo(normalIzador)
     solucion = aceptacion_por_umbrales(T,s_0,normalIzador)
     solucion2 = pasa_a_ids_reales(ciudades_del_problema,solucion)
     costo_f = costo(solucion, normalIzador)
-    return[solucion2,costo_f,es_factible(costo_f,normalIzador)]
+    return[solucion2,costo_f,es_factible(costo_f,normalIzador),s_0]
 end
 
-resp = haz_todo(N)
-minimo = resp[2]
-s = resp[1]
-println(minimo)
-println(s)
-println(resp[3])
+
+
+for i in 1:100
+    resp = haz_todo(N)
+    minimo = resp[2]
+    s = resp[1]
+
+    println(string("costo= ",minimo," solucion = ", s, " es factible ",resp[3], " semilla = ",resp[4], "\n"))
+end
 
 end
