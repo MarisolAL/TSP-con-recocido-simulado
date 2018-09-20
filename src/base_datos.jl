@@ -101,5 +101,17 @@ function crea_matriz_adyacencias(ciudades_del_problema)
         return matriz
 end
 
+"Funcion que dada la lista de id's de una ruta devuelve dos arreglos uno con la latitud
+y otro con la longitud
+#Arguments
+- id_s :: Array{Int64,1}: Arreglo con los id's de la ruta"
+function get_lat_longitud(id_s)
+    id_s = strip(string(id_s), ['[',']','(',')','{','}'])
+    consulta_long = string("select longitude from cities where id in (",id_s,")")
+    consulta_lat = string("select latitude from cities where id in (",id_s,")")
+    longitudes = convert(Array, SQLite.query(base_datos,consulta_long))
+    latitudes = convert(Array, SQLite.query(base_datos,consulta_lat))
+    return[latitudes,longitudes]
+end
 
 end
