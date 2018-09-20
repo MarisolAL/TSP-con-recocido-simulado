@@ -1,16 +1,18 @@
 module recocido_simulado
 include("base_datos.jl")
 using StatsBase
+using Random
 
+__precompile__()
 #Parte de la CONFIGURACION
 ciudades_del_problema = [1,2,3,28,74,163,164,165,166,167,169,326,327,328,329,330,489,490,491,492,493,494,495,653,654,655,658,666,814,815,816,817,818,819,978,979,980,981,1037,1073]
-T_0 = 100
-L = 500
+T_0 = 50
+L = 800
 iter_max = 5000
-epsilon = 0.6
-phi = 0.5
+epsilon = 0.7
+phi = 0.95
 veces = 5000
-epsilon_p = 0.1
+epsilon_p = 0.5
 P = 0.9
 #############################
 N = Base_Datos.normalizador(ciudades_del_problema)
@@ -41,11 +43,12 @@ end
 - v_1::Integer: El primer vertice que se va a permutar
 - v_2::Integer: El segundo vertice a permutar
 - norm::Float: El normalizador"
-function costo_permutacion(costo_actual, ruta, v_1, v_2,norm)
+function costo_permutacion(costo_actual, ruta_1, v_1, v_2,norm)
     suma = costo_actual*norm
-    length = size(ruta)[1]
-    indice_v_1 = Base_Datos.find_id(ruta,v_1)
-    indice_v_2 = Base_Datos.find_id(ruta,v_2)
+    length = size(ruta_1)[1]
+    ruta = permuta(copy(ruta_1),v_1,v_2)
+    indice_v_1 = Base_Datos.find_id(ruta_1,v_1)
+    indice_v_2 = Base_Datos.find_id(ruta_1,v_2)
     if indice_v_1 == length #v_1 esta en el extremo
         suma = suma - grafica[v_1,ruta[indice_v_1-1]] + grafica[v_2,ruta[indice_v_1-1]] #permutamos el extremo
         if indice_v_2 == 1
@@ -104,7 +107,8 @@ para esto usamos los id's en graica para luego despues hacer la correspondencia 
 los verdaderos id's localizados en la base de datos
 #Arguments
 - longitud:: Int64: Longitud de la ruta"
-function obten_permutacion_aleatoria(longitud)
+function obten_permutacion_aleatoria(longitud,semilla)
+    Random.seed!(semilla)
     ruta = sample(1:longitud, longitud, replace=false)#Obtenemos dos indices aleatorios
     return ruta
 end
@@ -124,8 +128,8 @@ function calcula_lote(T, S,normalIzador)
         id_s = sample(1:size(ciudades_del_problema)[1], 2, replace=false) #obtenemos 2 id's
         id_1 = id_s[1]
         id_2 = id_s[2]
-        s_1 = permuta(copy(S),id_1,id_2)
-        costo_aux = costo(s_1, normalIzador)
+        #s_1 = permuta(copy(S),id_1,id_2)
+        costo_aux = costo_permutacion(costo_i,S,id_1,id_2, normalIzador)
         if costo_aux < costo_i + T
             S = permuta(S,id_1,id_2)
             c = c+1
@@ -170,8 +174,9 @@ function porcentaje_aceptados(S,T,normalIzador)
         id_s = sample(1:size(ciudades_del_problema)[1], 2, replace=false) #obtenemos 2 id's
         id_1 = id_s[1]
         id_2 = id_s[2]
-        s_1 = permuta(copy(S),id_1,id_2)
-        costo_aux = costo(s_1, normalIzador)
+        #s_1 = permuta(copy(S),id_1,id_2)
+        costo_aux = costo_permutacion(costo_i,S,id_1,id_2, normalIzador)
+
         if costo_aux < costo_i + T
             c = c+1
             S = permuta(S,id_1,id_2)
@@ -255,25 +260,31 @@ function pasa_a_ids_reales(ciudades_del_problema, solucion)
 end
 
 "Funcion que corre todo el algoritmo"
-function haz_todo(normalIzador)
+function haz_todo(normalIzador,semilla)
     #Tomando instancia
     length = size(ciudades_del_problema)[1]
-    s_0 = obten_permutacion_aleatoria(length)#permutacion aleatoria
+    s_0 = obten_permutacion_aleatoria(length,semilla)#permutacion aleatoria
     T = temperatura_inicial(copy(s_0),T_0,P,normalIzador)
     solucion = aceptacion_por_umbrales(T,s_0,normalIzador)
     solucion2 = pasa_a_ids_reales(ciudades_del_problema,solucion)
     costo_f = costo(solucion, normalIzador)
+    map(x -> trunc(Int,x),solucion2)
     return[solucion2,costo_f,es_factible(costo_f,normalIzador),s_0]
 end
 
-
-
-for i in 1:100
-    resp = haz_todo(N)
-    minimo = resp[2]
-    s = resp[1]
-
-    println(string("costo= ",minimo," solucion = ", s, " es factible ",resp[3], " semilla = ",resp[4], "\n"))
+function corre_varias_veces(veces_1)
+    minimo_g = Inf
+    for i in 1:veces_1
+        semilla = rand(1:500)
+        resp = haz_todo(N,semilla)
+        minimo = resp[2]
+        s = resp[1]
+        if minimo < minimo_g
+            minimo_g = minimo
+        end
+        println(string("costo= ",minimo," solucion = ", s, " es factible ",resp[3], " semilla = ",semilla, "\n"))
+    end
+    println(minimo_g)
 end
-
+corre_varias_veces(50)
 end
