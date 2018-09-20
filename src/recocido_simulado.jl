@@ -1,19 +1,22 @@
 module recocido_simulado
 include("base_datos.jl")
+include("visualizador.jl")
 using StatsBase
 using Random
 
 __precompile__()
 #Parte de la CONFIGURACION
+
 ciudades_del_problema = [1,2,3,28,74,163,164,165,166,167,169,326,327,328,329,330,489,490,491,492,493,494,495,653,654,655,658,666,814,815,816,817,818,819,978,979,980,981,1037,1073]
-T_0 = 50
-L = 800
-iter_max = 5000
-epsilon = 0.7
-phi = 0.95
-veces = 5000
-epsilon_p = 0.5
-P = 0.9
+ T_0 = 50
+ L = 800
+ iter_max = 5000
+ epsilon = 0.7
+ phi = 0.95
+ veces = 5000
+ epsilon_p = 0.5
+ P = 0.9
+
 #############################
 N = Base_Datos.normalizador(ciudades_del_problema)
 grafica = Base_Datos.crea_matriz_adyacencias(ciudades_del_problema)
@@ -268,23 +271,45 @@ function haz_todo(normalIzador,semilla)
     solucion = aceptacion_por_umbrales(T,s_0,normalIzador)
     solucion2 = pasa_a_ids_reales(ciudades_del_problema,solucion)
     costo_f = costo(solucion, normalIzador)
-    map(x -> trunc(Int,x),solucion2)
+    solucion2 = map(x -> trunc(Int,x),solucion2)
     return[solucion2,costo_f,es_factible(costo_f,normalIzador),s_0]
 end
 
 function corre_varias_veces(veces_1)
     minimo_g = Inf
+    s_minima = []
     for i in 1:veces_1
-        semilla = rand(1:500)
+        semilla = rand(1:5000)
+        if i%200== 00
+            global epsilon_p += rand(-100:100)/100
+            if epsilon_p<0 || epsilon_p>1
+                global epsilon_p = rand(0:100)/100
+            end
+            global epsilon += rand(-100:100)/100
+            if epsilon<0 || epsilon>1
+                global epsilon = rand(0:100)/100
+            end
+            global T_0 += rand(-100:100)/100
+            global phi += rand(-100:100)/100
+            if phi<0 || phi>1
+                global phi = rand(0:100)/100
+            end
+            println("##############################")
+            println(string("epsilon_p = ", epsilon_p, " epsilon = ", epsilon, " T_0 = ", T_0, " phi = ",phi,"\n"))
+        end
         resp = haz_todo(N,semilla)
         minimo = resp[2]
         s = resp[1]
         if minimo < minimo_g
+            s_minima = s
             minimo_g = minimo
         end
-        println(string("costo= ",minimo," solucion = ", s, " es factible ",resp[3], " semilla = ",semilla, "\n"))
+        println(string("costo = ",minimo," solucion = ", s, " es factible ",resp[3], " semilla = ",semilla, "\n"))
     end
     println(minimo_g)
+    println(s_minima)
+    visualizador.grafica_ruta(s_minima)
 end
-corre_varias_veces(50)
+
+corre_varias_veces(3500)
 end
