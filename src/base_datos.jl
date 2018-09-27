@@ -69,6 +69,15 @@ function find_id(lista, obj)
     return -1
 end
 
+
+function get_max(ciudades_del_problema)
+    id_s = strip(string(ciudades_del_problema), ['[',']','(',')','{','}'])
+    n = size(ciudades_del_problema,1)
+    consulta = string("select max(distance) from  connections where id_city_1 in (",id_s,") and id_city_2 in (",id_s,")")
+    suma_c = SQLite.query(base_datos,consulta)
+    suma = first(convert(Array,suma_c))
+    return suma
+end
 "Funcion que crea la matriz de adyacencias con los pesos entre las ciudades, en caso de no haber arista la funcion
 calcula la distancia natural y multiplica por el normalizador, a la arista con el mismo vertice se le asigna un 0
 #Arguments
@@ -87,11 +96,12 @@ function crea_matriz_adyacencias(ciudades_del_problema)
             matriz[id1, id2] = distancia
             matriz[id2, id1] = distancia
         end
+        max = get_max(ciudades_del_problema)
         #Matriz llena con distancias de la bd
         for i in 1:n
             for j in 1:n
                 if matriz[i,j] == 0.1
-                    matriz[i,j] = distancia_natural(ciudades_del_problema[i],ciudades_del_problema[j])*norm
+                    matriz[i,j] = distancia_natural(ciudades_del_problema[i],ciudades_del_problema[j])*max
                 end
                 if i == j
                     matriz[i,j] = 0
