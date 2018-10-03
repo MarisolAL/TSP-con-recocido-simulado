@@ -78,6 +78,7 @@ function get_max(ciudades_del_problema)
     suma = first(convert(Array,suma_c))
     return suma
 end
+
 "Funcion que crea la matriz de adyacencias con los pesos entre las ciudades, en caso de no haber arista la funcion
 calcula la distancia natural y multiplica por el normalizador, a la arista con el mismo vertice se le asigna un 0
 #Arguments
