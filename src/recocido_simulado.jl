@@ -162,12 +162,12 @@ function aceptacion_por_umbrales(T,S)
             p = a[1]
             S = a[2]
             if costo(a[3]) < costo(s_best)
-                s_best = S
+                s_best = a[3]
             end
         end
         T = phi*T
     end
-    return s_best
+    return s_best #Regresamos la mejor solucion
 end
 
 "Funcion que calcula el porcentaje de soluciones aceptadas
@@ -319,6 +319,7 @@ function corre_varias_veces(veces_1)
     println(s_minima)
     visualizador.grafica_ruta(s_minima)
 end
+
 
 corre_varias_veces(Meta.parse(ARGS[1]))
 
