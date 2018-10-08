@@ -9,11 +9,16 @@ usando la latitud y longitud obtenidas de la base de datos
 queremos graficar"
 function grafica_ruta(id_s)
     PyPlot.svg(true)
-    coordenadas = Base_Datos.get_lat_longitud(id_s)
-    x = coordenadas[2]
-    y = coordenadas[1]
+    len = size(id_s)[1]
+    x = ones(len)
+    y = ones(len)
+    for i in 1:len
+        coordenadas = Base_Datos.get_lat_longitud(id_s[i])
+        x[i] = coordenadas[2][1]
+        y[i] = coordenadas[1][1]
+    end
     #fig = figure(string("Grafica de la ruta ",id_s),figsize=(300,300))
-    plot(x, y, color="blue", linewidth=1.2, linestyle="--")
+    plot(x, y, color="blue", linewidth=1.1, linestyle="-")
     title(string("Grafica de la ruta ",id_s))
     savefig(string("Grafica de la ruta ",id_s))
 end
