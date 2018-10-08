@@ -10,7 +10,7 @@ __precompile__()
 ciudades_del_problema = [1,2,3,28,74,163,164,165,166,167,169,326,327,328,329,330,489,490,491,492,493,494,495,653,654,655,658,666,814,815,816,817,818,819,978,979,980,981,1037,1073]
  T_0 = 50
  L = 1000
- iter_max = 50000
+ iter_max = 5000
  epsilon = 0.7
  phi = 0.99
  veces = 5000
@@ -123,6 +123,7 @@ function calcula_lote(T, S)
     c = 0
     i = 0
     r = 0.0
+    s_best = S
     costo_i = costo(S)
     while c < L || i < iter_max
         #Obtenemos una permutacion
@@ -133,23 +134,26 @@ function calcula_lote(T, S)
         #costo_aux = costo_permutacion(costo_i,S,id_1,id_2, normalIzador)
         costo_aux = costo(s_1)
         if costo_aux < costo_i + T
-            S = permuta(S,id_1,id_2)
+            S = s_1
             c = c+1
             r = r + costo_aux
+            if costo(S) < costo(s_best)#Costo de la solucion actual
+                s_best = S
+            end
             costo_i = costo_aux #Para no recalcular
         end
         i += 1
     end
-    return [r/L,S]
+    return [r/L,S, s_best]
 end
 
 "Funcion que se encarga del recocido simulado
 #Arguments
 - T:: Float64: Temperatura inicial
-- S:: Ruta inicial
-- normalIzador:: Normalizador del sistema"
+- S:: Ruta inicial"
 function aceptacion_por_umbrales(T,S)
     p = 0
+    s_best = S
     while T > epsilon
         q = Inf
         while p <= q
@@ -157,17 +161,19 @@ function aceptacion_por_umbrales(T,S)
             a = calcula_lote(T, S)
             p = a[1]
             S = a[2]
+            if costo(a[3]) < costo(s_best)
+                s_best = S
+            end
         end
         T = phi*T
     end
-    return S
+    return s_best
 end
 
 "Funcion que calcula el porcentaje de soluciones aceptadas
 #Arguments
 - T:: Float64: Temperatura inicial
-- S:: Ruta actual
-- normalIzador:: Normalizador del sistema"
+- S:: Ruta actual"
 function porcentaje_aceptados(S,T)
     c = 0
     costo_i = costo(S)
@@ -262,11 +268,11 @@ function pasa_a_ids_fic(ciudades_del_problema, solucion)
     length = size(ciudades_del_problema)[1]
     respuesta = ones(length)
     for i in 1:length
-        indice = ciudades_del_problema[i]
-        ciudad = solucion[indice]
-        respuesta[i] = ciudad
+        elemento = solucion[i]
+        indice_en_lista = Base_Datos.find_id(ciudades_del_problema,elemento)
+        respuesta[i] = indice_en_lista
     end
-    return respuesta
+    return map(x -> trunc(Int,x),respuesta)
 end
 
 "Funcion que corre todo el algoritmo"
