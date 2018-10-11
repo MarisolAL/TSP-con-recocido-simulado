@@ -9,13 +9,13 @@ __precompile__()
 
 ciudades_del_problema = [1,2,3,28,74,163,164,165,166,167,169,326,327,328,329,330,489,490,491,492,493,494,495,653,654,655,658,666,814,815,816,817,818,819,978,979,980,981,1037,1073]
  T_0 = 50
- L = 1000
- iter_max = 5000
- epsilon = 0.7
- phi = 0.99
- veces = 5000
- epsilon_p = 0.7
- P = 0.9
+ L = 2000
+ iter_max = 2000
+ epsilon = 0.01
+ phi = 0.9
+ veces = 1000
+ epsilon_p = 0.01
+ P = 0.99
 
 #############################
 Norm = Base_Datos.normalizador(ciudades_del_problema)
@@ -119,13 +119,12 @@ end
 #Arguments
 - T:: Float64: Temperatura inicial
 - S:: Ruta inicial"
-function calcula_lote(T, S)
+function calcula_lote(T, S, s_best)
     c = 0
     i = 0
     r = 0.0
-    s_best = S
     costo_i = costo(S)
-    while c < L || i < iter_max
+    while c < L
         #Obtenemos una permutacion
         id_s = sample(1:size(ciudades_del_problema)[1], 2, replace=false) #obtenemos 2 id's
         id_1 = id_s[1]
@@ -142,8 +141,12 @@ function calcula_lote(T, S)
             end
             costo_i = costo_aux #Para no recalcular
         end
+        if i >= iter_max -1
+    		return [-1,S, s_best]
+    	end
         i += 1
     end
+
     return [r/L,S, s_best]
 end
 
@@ -158,12 +161,15 @@ function aceptacion_por_umbrales(T,S)
         q = Inf
         while p <= q
             q = p
-            a = calcula_lote(T, S)
+            a = calcula_lote(T, S, s_best)
             p = a[1]
             S = a[2]
             if costo(a[3]) < costo(s_best)
                 s_best = a[3]
             end
+        	if p < 0
+        		return s_best
+        	end
         end
         T = phi*T
     end
@@ -293,19 +299,6 @@ function corre_varias_veces(veces_1)
     s_minima = []
     for i in 1:veces_1
         semilla = abs(rand(Int))
-        if i%200== 0
-            global epsilon_p += rand(-100:100)/100
-            if epsilon_p<0 || epsilon_p>1
-                global epsilon_p = rand(0:100)/100
-            end
-            global epsilon += rand(-100:100)/100
-            if epsilon<0 || epsilon>1
-                global epsilon = rand(0:100)/100
-            end
-            global T_0 += rand(-100:100)/100
-            println("##############################")
-            println(string("epsilon_p = ", epsilon_p, " epsilon = ", epsilon, " T_0 = ", T_0, " phi = ",phi,"\n"))
-        end
         resp = haz_todo(semilla)
         minimo = resp[2]
         s = resp[1]
@@ -313,13 +306,14 @@ function corre_varias_veces(veces_1)
             s_minima = s
             minimo_g = minimo
         end
-        println(string("costo = ",minimo," solucion = ", s, " es factible ",resp[3], " semilla = ",semilla, "\n"))
+        if resp[3]
+            println(string("costo = ",minimo," solucion = ", s, " es factible ",resp[3], " semilla = ",semilla, "\n"))
+        end
     end
     println(minimo_g)
     println(s_minima)
     visualizador.grafica_ruta(s_minima)
 end
-
 
 corre_varias_veces(Meta.parse(ARGS[1]))
 
