@@ -10,7 +10,7 @@ __precompile__()
 ciudades_del_problema = [1,2,3,28,74,163,164,165,166,167,169,326,327,328,329,330,489,490,491,492,493,494,495,653,654,655,658,666,814,815,816,817,818,819,978,979,980,981,1037,1073]
  T_0 = 50
  L = 2000
- iter_max = 2000
+ iter_max = 4000
  epsilon = 0.01
  phi = 0.9
  veces = 1000
@@ -123,20 +123,31 @@ function calcula_lote(T, S, s_best)
     c = 0
     i = 0
     r = 0.0
+    indice_metodo2 = 0
+    longitud = size(ciudades_del_problema)[1]
     costo_i = costo(S)
     while c < L
         #Obtenemos una permutacion
-        id_s = sample(1:size(ciudades_del_problema)[1], 2, replace=false) #obtenemos 2 id's
+        id_s = sample(1:longitud, 2, replace=false) #obtenemos 2 id's
         id_1 = id_s[1]
         id_2 = id_s[2]
         s_1 = permuta(copy(S),id_1,id_2)
+        s_2 = permuta(copy(S),(indice_metodo2%longitud)+1,((indice_metodo2+1)%longitud)+1)
         #costo_aux = costo_permutacion(costo_i,S,id_1,id_2, normalIzador)
-        costo_aux = costo(s_1)
+        costo_s_1 = costo(s_1)
+        costo_s_2 = costo(s_2)
+        if costo_s_1 < costo_s_2
+            costo_aux = costo_s_1
+        else
+            costo_aux = costo_s_2
+            s_1 = s_2 #Usaremos la solucion con menor costo
+        end
+        indice_metodo2 +=1
         if costo_aux < costo_i + T
             S = s_1
             c = c+1
             r = r + costo_aux
-            if costo(S) < costo(s_best)#Costo de la solucion actual
+            if costo_aux < costo(s_best)#Costo de la solucion actual
                 s_best = S
             end
             costo_i = costo_aux #Para no recalcular
@@ -267,7 +278,7 @@ function pasa_a_ids_reales(ciudades_del_problema, solucion)
         ciudad = ciudades_del_problema[indice]
         respuesta[i] = ciudad
     end
-    return respuesta
+    return map(x -> trunc(Int,x),respuesta)
 end
 
 function pasa_a_ids_fic(ciudades_del_problema, solucion)
@@ -298,7 +309,8 @@ function corre_varias_veces(veces_1)
     minimo_g = Inf
     s_minima = []
     for i in 1:veces_1
-        semilla = abs(rand(Int))
+        #semilla = abs(rand(Int))
+        semilla = i
         resp = haz_todo(semilla)
         minimo = resp[2]
         s = resp[1]
