@@ -11,12 +11,12 @@ __precompile__()
 ciudades_del_problema = [1,2,3,28,74,163,164,165,166,167,169,326,327,328,329,330,489,490,491,492,493,494,495,653,654,655,658,666,814,815,816,817,818,819,978,979,980,981,1037,1073]
  T_0 = 50
  L = 2000
- iter_max = 4000
- epsilon = 0.01
+ iter_max = 1600
+ epsilon = 0.0001
  phi = 0.9
  veces = 1000
- epsilon_p = 0.01
- P = 0.99
+ epsilon_p = 0.04
+ P = 0.9
 
 #############################
 Norm = Base_Datos.normalizador(ciudades_del_problema)
@@ -133,18 +133,8 @@ function calcula_lote(T, S, s_best)
         id_1 = id_s[1]
         id_2 = id_s[2]
         s_1 = permuta(copy(S),id_1,id_2)
-        s_2 = permuta(copy(S),(indice_metodo2%longitud)+1,((indice_metodo2+1)%longitud)+1)
-        #costo_aux = costo_permutacion(costo_i,S,id_1,id_2, normalIzador)
-        costo_s_1 = costo(s_1)
-        costo_s_2 = costo(s_2)
-        if costo_s_1 < costo_s_2
-            costo_aux = costo_s_1
-        else
-            costo_aux = costo_s_2
-            s_1 = s_2 #Usaremos la solucion con menor costo
-        end
-        indice_metodo2 +=1
-        if costo_aux < costo_i + T
+        costo_aux = costo(s_1)
+	if costo_aux < costo_i + T
             S = s_1
             c = c+1
             r = r + costo_aux
@@ -152,13 +142,13 @@ function calcula_lote(T, S, s_best)
                 s_best = S
             end
             costo_i = costo_aux #Para no recalcular
+	    i = 0
         end
         if i >= iter_max -1
     		return [-1,S, s_best]
     	end
         i += 1
     end
-
     return [r/L,S, s_best]
 end
 
@@ -326,6 +316,7 @@ function corre_varias_veces(veces_1, random_b)
         if resp[3]
             escritura = string(escritura, string("costo = ",minimo," solucion = ", s, " es factible ",resp[3], " semilla = ",semilla, "\n"))
         end
+        println(i)
     end
     escritura = string(escritura, minimo_g)
     escritura = string(escritura, s_minima)
